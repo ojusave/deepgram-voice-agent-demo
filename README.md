@@ -1,6 +1,7 @@
 # Deepgram Voicebot
 
 [![Discord](https://dcbadge.vercel.app/api/server/xWRaCDBtW4?style=flat)](https://discord.gg/xWRaCDBtW4)
+[![Deploy to Render](https://render.com/images/deploy-to-render-button.svg)](https://render.com/deploy?repo=https://github.com/ojusave/deepgram-voice-agent-demo)
 
 A demo is live at https://deepgram.com/agent
 
