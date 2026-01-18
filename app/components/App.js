@@ -69,6 +69,17 @@ export const App = ({
       agentVoiceAnalyser.current = audioContext.current.createAnalyser();
       agentVoiceAnalyser.current.fftSize = 2048;
       agentVoiceAnalyser.current.smoothingTimeConstant = 0.96;
+      
+      // Resume audio context on user interaction (required by browser autoplay policy)
+      const resumeAudio = () => {
+        if (audioContext.current && audioContext.current.state === "suspended") {
+          audioContext.current.resume();
+        }
+      };
+      
+      // Try to resume on any user interaction
+      document.addEventListener("click", resumeAudio, { once: true });
+      document.addEventListener("touchstart", resumeAudio, { once: true });
     }
   }, []);
 
@@ -77,11 +88,23 @@ export const App = ({
    * Converts raw audio into an AudioBuffer and plays the processed audio through the web audio context
    */
   const bufferAudio = useCallback((data) => {
+    // Resume audio context if suspended (browser autoplay policy)
+    if (audioContext.current && audioContext.current.state === "suspended") {
+      audioContext.current.resume().catch((err) => {
+        console.error("Failed to resume audio context:", err);
+      });
+    }
+    
     const audioBuffer = createAudioBuffer(audioContext.current, data);
     if (!audioBuffer) return;
-    scheduledAudioSources.current.push(
-      playAudioBuffer(audioContext.current, audioBuffer, startTimeRef, agentVoiceAnalyser.current),
-    );
+    
+    try {
+      scheduledAudioSources.current.push(
+        playAudioBuffer(audioContext.current, audioBuffer, startTimeRef, agentVoiceAnalyser.current),
+      );
+    } catch (error) {
+      console.error("Error playing audio buffer:", error);
+    }
   }, []);
 
   const clearAudioBuffer = () => {
@@ -205,10 +228,20 @@ export const App = ({
     async (event) => {
       if (event.data instanceof ArrayBuffer) {
         if (status !== VoiceBotStatus.SLEEPING && !isWaitingForUserVoiceAfterSleep.current) {
+          // Resume audio context if suspended before playing
+          if (audioContext.current && audioContext.current.state === "suspended") {
+            try {
+              await audioContext.current.resume();
+            } catch (err) {
+              console.error("Failed to resume audio context:", err);
+            }
+          }
           bufferAudio(event.data); // Process the ArrayBuffer data to play the audio
+        } else {
+          console.log("Audio blocked - agent is sleeping or waiting for user voice");
         }
       } else {
-        console.log(event?.data);
+        console.log("WebSocket message:", event?.data);
         // Handle other types of messages such as strings
         setData(event.data);
         onMessageEvent(event.data);

@@ -23,22 +23,33 @@ const DeepgramContextProvider = ({ children }) => {
 
     setSocketState(0); // connecting
 
-    const newSocket = new WebSocket("wss://agent.deepgram.com/v1/agent/converse", [
-      "bearer",
-      await getAuthToken(),
-    ]);
+    try {
+      const authToken = await getAuthToken();
+      if (!authToken) {
+        console.error("Failed to get authentication token. Check your DEEPGRAM_API_KEY.");
+        setSocketState(2); // error
+        return;
+      }
+      console.log("Got auth token, connecting to WebSocket...");
 
-    const onOpen = () => {
-      setSocketState(1); // connected
-      setReconnectAttempts(0); // reset reconnect attempts after a successful connection
-      console.log("WebSocket connected.");
-      keepAlive.current = setInterval(sendKeepAliveMessage(newSocket), 10000);
-    };
+      const newSocket = new WebSocket("wss://agent.deepgram.com/v1/agent/converse", [
+        "bearer",
+        authToken,
+      ]);
 
-    const onError = (err) => {
-      setSocketState(2); // error
-      console.error("Websocket error", err);
-    };
+      const onOpen = () => {
+        setSocketState(1); // connected
+        setReconnectAttempts(0); // reset reconnect attempts after a successful connection
+        console.log("WebSocket connected.");
+        keepAlive.current = setInterval(sendKeepAliveMessage(newSocket), 10000);
+      };
+
+      const onError = (err) => {
+        setSocketState(2); // error
+        console.error("Websocket error", err);
+        console.error("WebSocket readyState:", newSocket.readyState);
+        console.error("WebSocket URL:", newSocket.url);
+      };
 
     const onClose = () => {
       clearInterval(keepAlive.current);
@@ -52,13 +63,17 @@ const DeepgramContextProvider = ({ children }) => {
       // console.info("message", e);
     };
 
-    newSocket.binaryType = "arraybuffer";
-    newSocket.addEventListener("open", onOpen);
-    newSocket.addEventListener("error", onError);
-    newSocket.addEventListener("close", onClose);
-    newSocket.addEventListener("message", onMessage);
+      newSocket.binaryType = "arraybuffer";
+      newSocket.addEventListener("open", onOpen);
+      newSocket.addEventListener("error", onError);
+      newSocket.addEventListener("close", onClose);
+      newSocket.addEventListener("message", onMessage);
 
-    setSocket(newSocket);
+      setSocket(newSocket);
+    } catch (error) {
+      console.error("Error connecting to Deepgram:", error);
+      setSocketState(2); // error
+    }
   };
 
   return (

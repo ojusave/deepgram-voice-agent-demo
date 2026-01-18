@@ -2,9 +2,30 @@ import { convertFloat32ToInt16, downsample } from "../utils/audioUtils";
 import nextConfig from "next.config.mjs";
 
 export const getAuthToken = async () => {
-  const result = await (await fetch(withBasePath("/api/authenticate"), { method: "POST" })).json();
-
-  return result.access_token;
+  try {
+    const response = await fetch(withBasePath("/api/authenticate"), { method: "POST" });
+    const result = await response.json();
+    
+    if (!response.ok) {
+      console.error("Authentication failed:", result);
+      return null;
+    }
+    
+    if (result.error) {
+      console.error("Deepgram API error:", result.error);
+      return null;
+    }
+    
+    if (!result.access_token) {
+      console.error("No access token in response:", result);
+      return null;
+    }
+    
+    return result.access_token;
+  } catch (error) {
+    console.error("Error fetching auth token:", error);
+    return null;
+  }
 };
 
 export const sendMicToSocket = (socket: WebSocket) => (event: AudioProcessingEvent) => {
