@@ -20,10 +20,13 @@ import Latency from "./components/Latency";
 import { PencilIcon } from "./components/icons/PencilIcon";
 import InstructionInput from "./components/InstructionInput";
 import { TerminalIcon } from "./components/icons/TerminalIcon";
+import { NewTabIcon } from "./components/icons/NewTabIcon";
 import Header from "./components/Header";
 import { useStsQueryParams } from "./hooks/UseStsQueryParams";
 import { useDeepgram } from "./context/DeepgramContextProvider";
 import BehindTheScenes from "./components/BehindTheScenes";
+
+const DEPLOY_URL = "https://render.com/deploy?repo=https://github.com/ojusave/deepgram-voice-agent-demo";
 
 const DesktopMenuItems = () => {
   const { prompt } = useStsQueryParams();
@@ -114,6 +117,29 @@ export default function Home() {
                 <BehindTheScenes onClose={() => setBehindTheScenesOpen(false)} />
               ) : (
                 <>
+                  <a
+                    href={DEPLOY_URL}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="w-full px-4 py-3 bg-blue-600 hover:bg-blue-700 text-white rounded-lg transition-colors flex items-center gap-2 font-medium"
+                  >
+                    <svg
+                      className="w-5 h-5"
+                      fill="none"
+                      stroke="currentColor"
+                      viewBox="0 0 24 24"
+                      xmlns="http://www.w3.org/2000/svg"
+                    >
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        strokeWidth={2}
+                        d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12"
+                      />
+                    </svg>
+                    <span className="flex-grow text-left">Deploy on Render</span>
+                    <NewTabIcon className="w-4 h-4" />
+                  </a>
                   <button
                     className="w-full px-4 py-3 bg-gray-850 hover:bg-gray-800 text-gray-25 rounded-lg transition-colors flex items-center gap-2"
                     onClick={() => setBehindTheScenesOpen(true)}
