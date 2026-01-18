@@ -3,7 +3,7 @@
 
 [![Deploy to Render](https://render.com/images/deploy-to-render-button.svg)](https://render.com/deploy?repo=https://github.com/ojusave/deepgram-voice-agent-demo)
 
-A demo is live at https://deepgram.com/agent
+A demo is live at [https://deepgram-voice-agent-demo-agyv.onrender.com/](https://deepgram-voice-agent-demo-agyv.onrender.com/)
 
 Table of contents:
 
